@@ -20,7 +20,7 @@ void read_args(int argc, char* args[]) {
   struct servent *servp;
   unsigned long inaddr;
   struct {
-    char proxy_port[16];
+    char proxy_port[32];
     char service_host[64];
     char service_port[32];
   } pargs;
