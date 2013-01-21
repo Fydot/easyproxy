@@ -66,7 +66,7 @@ void onproxy (int usersockfd) {
   fd_set rdfdset;
   int connstat;
   int iolen;
-  char buf[2048];
+  char buf[4096];
   if ((isosockfd = socket(AF_INET,SOCK_STREAM,0)) < 0) puts("failed to create socket to host");
   connstat = connect(isosockfd,(struct sockaddr *) &server_host, sizeof(server_host));
   switch (connstat) {
@@ -90,6 +90,7 @@ void onproxy (int usersockfd) {
     if (select(FD_SETSIZE,&rdfdset,NULL,NULL,NULL) < 0) {
       puts("select failed");
     }
+    bzero(&buf, sizeof(buf));
     if (FD_ISSET(usersockfd,&rdfdset)) {
       if ((iolen = read(usersockfd,buf,sizeof(buf))) <= 0) break;
       write(isosockfd,buf,iolen);
@@ -117,14 +118,14 @@ int main(int argc, char* args[]) {
     fputs("Failed to create server socket\r\n",stderr); 
     return 1;
   } 
-  if (bind(sockfd,(struct sockaddr_in *) &servaddr,sizeof(servaddr)) < 0) { 
+  if (bind(sockfd,(struct sockaddr *) &servaddr,sizeof(servaddr)) < 0) { 
     fputs("faild to bind server socket to specified port\r\n",stderr); 
     return 1;
   } 
   listen(sockfd,5); 
   while (1) {
     clilen = sizeof(cliaddr); 
-    newsockfd = accept(sockfd, (struct sockaddr_in *) &cliaddr, &clilen); 
+    newsockfd = accept(sockfd, (struct sockaddr *) &cliaddr, &clilen); 
     if (newsockfd < 0 && errno == EINTR) {
       continue;
     }
