@@ -76,6 +76,7 @@ void onproxy (int usersockfd) {
     case ETIMEDOUT:
     case ECONNREFUSED:
       strcat(buf,"\r\n");
+      printf("%s\n", buf);
       write(usersockfd,buf,strlen(buf));
       close(usersockfd);
       return;
