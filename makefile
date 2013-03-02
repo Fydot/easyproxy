@@ -1,2 +1,2 @@
 proxy : proxy.c
-	gcc -o proxy proxy.c
+	gcc -Werror -o proxy proxy.c
