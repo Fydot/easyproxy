@@ -2,6 +2,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/file.h>
@@ -76,7 +79,6 @@ void onproxy (int usersockfd) {
     case ETIMEDOUT:
     case ECONNREFUSED:
       strcat(buf,"\r\n");
-      printf("%s\n", buf);
       write(usersockfd,buf,strlen(buf));
       close(usersockfd);
       return;
@@ -94,10 +96,12 @@ void onproxy (int usersockfd) {
     bzero(&buf, sizeof(buf));
     if (FD_ISSET(usersockfd,&rdfdset)) {
       if ((iolen = read(usersockfd,buf,sizeof(buf))) <= 0) break;
+      //printf("Client Say: %s", buf);
       write(isosockfd,buf,iolen);
     }
     if (FD_ISSET(isosockfd,&rdfdset)) { 
       if ((iolen = read(isosockfd,buf,sizeof(buf))) <= 0) break;
+      //printf("Server Say: %d\n", strlen(buf));
       write(usersockfd,buf,iolen); 
     } 
   }
@@ -123,10 +127,10 @@ int main(int argc, char* args[]) {
     fputs("faild to bind server socket to specified port\r\n",stderr); 
     return 1;
   } 
-  listen(sockfd,5); 
+  listen(sockfd,25); 
   while (1) {
     clilen = sizeof(cliaddr); 
-    newsockfd = accept(sockfd, (struct sockaddr *) &cliaddr, &clilen); 
+    newsockfd = accept(sockfd, (struct sockaddr *) &cliaddr, (socklen_t*)&(clilen)); 
     if (newsockfd < 0 && errno == EINTR) {
       continue;
     }
