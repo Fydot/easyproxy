@@ -27,9 +27,12 @@ void read_args(int argc, char* args[]) {
     char service_host[64];
     char service_port[32];
   } pargs;
-  strcpy(pargs.proxy_port, args[1]);
-  strcpy(pargs.service_host, args[2]);
-  strcpy(pargs.service_port, args[3]);
+  //strcpy(pargs.proxy_port, args[1]);
+  //strcpy(pargs.service_host, args[2]);
+  //strcpy(pargs.service_port, args[3]);
+  strcpy(pargs.proxy_port, "6666");
+  strcpy(pargs.service_host, "127.0.0.1");
+  strcpy(pargs.service_port, "8000");
   int i;
   for (i = 0; i < strlen(pargs.proxy_port); ++i) {
     if (!isdigit(pargs.proxy_port[i])) {
