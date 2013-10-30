@@ -77,8 +77,9 @@ def on_recv(fileno, epoll_pool):
 
 
 def on_send(fileno):
-    length = fileno_socket[fileno].send(send_fileno[fileno])
-    send_fileno[fileno] = send_fileno[fileno][length:]
+    if len(send_fileno[fileno]) > 0:
+        length = fileno_socket[fileno].send(send_fileno[fileno])
+        send_fileno[fileno] = send_fileno[fileno][length:]
 
 
 def main():
