@@ -14,7 +14,7 @@ send_fileno = {}
 def parse_args(args_str):
     args_pattern = re.compile(r'\d+->[\w\'-.]+:\d+$')
     if not args_pattern.match(args_str):
-        raise Exception('''I don't know what you say, give me (port->hostname:port)''')
+        raise Exception('''I don't know what you say, give me "port->hostname:port"''')
     local_port = int(args_str.split('->')[0])
     remote_host = args_str.split('->')[1].split(':')[0]
     remote_port = int(args_str.split('->')[1].split(':')[1])
@@ -43,10 +43,11 @@ def connect(host, port):
 
 def on_accept(server_socket, epoll_pool, remote_host, remote_port):
     connection, address = server_socket.accept()
-    connection.setblocking(0)
     register(epoll_pool, connection, select.EPOLLIN | select.EPOLLOUT)
+
     service_socket = connect(remote_host, remote_port)
     register(epoll_pool, service_socket, select.EPOLLIN | select.EPOLLOUT)
+
     fileno_socket[connection.fileno()] = connection
     fileno_socket[service_socket.fileno()] = service_socket
     pair_socket[connection.fileno()] = service_socket.fileno()
@@ -70,7 +71,7 @@ def on_socket_closed(fileno, epoll_pool):
 
 def on_recv(fileno, epoll_pool):
     data = fileno_socket[fileno].recv(2 ** 12)
-    if data is None:
+    if data is None or data == '':
         on_socket_closed(fileno, epoll_pool)
     else:
         send_fileno[pair_socket[fileno]] += data
@@ -97,6 +98,8 @@ def main():
                 on_recv(fileno, epoll_pool)
             elif event & select.EPOLLOUT:
                 on_send(fileno)
+            elif event & select.EPOLLHUP:
+                on_socket_closed(fileno, epoll_pool)
 
 
 if __name__ == "__main__":
