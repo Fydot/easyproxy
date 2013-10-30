@@ -43,9 +43,11 @@ def connect(host, port):
 
 def on_accept(server_socket, epoll_pool, remote_host, remote_port):
     connection, address = server_socket.accept()
+    connection.setblocking(0)
     register(epoll_pool, connection, select.EPOLLIN | select.EPOLLOUT)
 
     service_socket = connect(remote_host, remote_port)
+    service_socket.setblocking(0)
     register(epoll_pool, service_socket, select.EPOLLIN | select.EPOLLOUT)
 
     fileno_socket[connection.fileno()] = connection
@@ -70,11 +72,15 @@ def on_socket_closed(fileno, epoll_pool):
 
 
 def on_recv(fileno, epoll_pool):
-    data = fileno_socket[fileno].recv(2 ** 12)
-    if data is None or data == '':
-        on_socket_closed(fileno, epoll_pool)
-    else:
+    try:
+        data = fileno_socket[fileno].recv(2 ** 12)
         send_fileno[pair_socket[fileno]] += data
+    except:
+        pass
+    #if data is None or data == '':
+    #    on_socket_closed(fileno, epoll_pool)
+    #else:
+    #    send_fileno[pair_socket[fileno]] += data
 
 
 def on_send(fileno):
